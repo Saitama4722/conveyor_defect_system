@@ -1,4 +1,4 @@
-# Neural Network Visual Inspection System for Industrial Product Quality Control
+# Conveyor Defect Detection System
 
 [![Python 3.10+](https://img.shields.io/badge/Python-3.10%2B-3776AB?logo=python&logoColor=white)](https://www.python.org/)
 [![Webots R2025a](https://img.shields.io/badge/Webots-R2025a-007ACC?logo=robotframework&logoColor=white)](https://cyberbotics.com)
@@ -8,19 +8,15 @@
 
 End-to-end visual defect detection pipeline for a simulated industrial conveyor line: **Webots R2025a** physics scene → **ZeroMQ** dual-camera stream → **YOLOv8n-OBB + GhostConv** detector → **Tkinter** operator HMI with live analytics.
 
-<!-- TODO: insert demo.gif here (e.g. docs/demo.gif) — recommended 10–15 s capture of GUI with both cameras streaming live detections -->
-
----
-
 ## 🚀 Overview
 
-`conveyor_defect_system` is a research prototype of an automated optical inspection (AOI) station that classifies surface defects on industrial parts moving along a conveyor belt. The simulator (Webots R2025a) hosts a physically-driven conveyor with two cameras (front and side); a Python detection service consumes the JPEG stream over ZMQ and runs an oriented-bounding-box detector based on YOLOv8n with a GhostConv backbone; an operator-facing Tkinter GUI displays the live feed, defect log, and real-time defect statistics.
+`conveyor_defect_system` is an automated optical inspection (AOI) prototype that classifies surface defects on industrial parts moving along a conveyor belt. Webots R2025a hosts a physically-driven conveyor with two cameras (front and side); a Python detection service consumes the JPEG stream over ZMQ and runs an oriented-bounding-box detector based on YOLOv8n with a GhostConv backbone; an operator-facing Tkinter GUI displays the live feed, the defect log, and real-time defect statistics.
 
-The system was developed as a bachelor's thesis project at **RTU MIREA** (РТУ МИРЭА), study group **КРБО-03-22**, direction **15.03.06 — Mechatronics and Robotics**, defended in 2026.
+The system targets three product geometries (cylinder, bar/box, L-bracket) and recognizes eight defect classes commonly observed on machined and stamped parts.
 
 ## 🎯 Key Results
 
-All technical-specification requirements were exceeded by a wide margin:
+All target metrics are exceeded by a wide margin:
 
 | Metric | Requirement | Achieved | Status |
 | --- | --- | --- | --- |
@@ -29,8 +25,8 @@ All technical-specification requirements were exceeded by a wide margin:
 | Recall | — | **0.874** | ✅ |
 | Frame processing speed | ≤ 100 ms | **3.1 ms** | ✅ |
 | Video stream resolution | ≥ 640×480 | **1920×1080** | ✅ |
-| Number of product types | ≥ 3 | **3** (cylinder, bar/box, L-bracket) | ✅ |
-| Number of cameras | 2 | **2** (front + side) | ✅ |
+| Number of product types | ≥ 3 | **3** | ✅ |
+| Number of cameras | 2 | **2** | ✅ |
 | Training time (RTX 4070, 100 epochs) | — | **~11 min** | ✅ |
 
 The detector recognizes **8 defect classes**: `bent`, `scratch`, `color`, `broken_large`, `broken_small`, `contamination`, `thread_side`, `thread_top`.
@@ -99,8 +95,8 @@ conveyor_defect_system/
                      │                                ▼
         ┌────────────────────────┐         ┌─────────────────────┐
         │  Webots Controller     │◀────────│  Tkinter GUI        │
-        │  (camera + conveyor    │  cmds   │  app.py             │
-        │   control)             │         │  + Matplotlib       │
+        │  (cameras + conveyor)  │  cmds   │  app.py             │
+        │                        │         │  + Matplotlib       │
         └────────────────────────┘         └─────────────────────┘
                      ▲                                ▲
                      │       ZMQ REQ :5556            │
@@ -133,7 +129,7 @@ pip install -r requirements.txt
 ```bash
 # 5. Start the operator GUI
 python gui/app.py
-#    then click "Старт" inside the GUI window
+#    then click "Start" inside the GUI window
 ```
 
 ## 📦 Installation
@@ -174,26 +170,25 @@ Install Webots R2025a from [cyberbotics.com](https://cyberbotics.com) and, in `T
 
 ## 🎮 GUI Reference
 
-The operator interface (`gui/app.py`) is built around a single dark-themed Tkinter window:
+The operator interface (`gui/app.py`) is a single dark-themed Tkinter window:
 
 - **Video panel** — 1460×480 live feed with overlaid OBB detections.
-- **Camera toggle** — switch between *Camera 1 (front)* and *Camera 2 (side)*.
-- **Control buttons** — `Старт` (start conveyor) and `Стоп` (stop conveyor).
-- **Object dropdown** — `Деталь на ленте`: select which part the simulator spawns next.
-- **Camera preset buttons** — `⬆ Сверху` (top-down view) and `↔ Сбоку` (side view) for each camera.
-- **Fullscreen** — double-click the video panel to enter 1280×720 fullscreen.
-- **Stats panel** — running total of detections and the currently dominant defect class.
+- **Camera toggle** — switch between *front* and *side* camera.
+- **Control buttons** — `Start` (start conveyor) and `Stop` (stop conveyor).
+- **Object dropdown** — select which part the simulator spawns next on the belt.
+- **Camera preset buttons** — top-down view and side view, available per camera.
+- **Fullscreen** — double-click the video panel to enter fullscreen mode.
 - **Detection table** — chronological log: *Time / Camera / Class / Confidence*.
 - **Chart 1** — horizontal bar chart of the top-3 defects, updated live.
 - **Chart 2** — detection-rate dynamics line chart, updated live.
 
 ## 📡 ZMQ Protocol
 
-The Webots controller and the Python services communicate over two ZMQ sockets:
+The Webots controller and the Python services communicate over two ZeroMQ sockets.
 
 ### Port 5555 — PUB/SUB (video)
 
-JPEG-encoded frames published on two topics:
+JPEG-encoded frames are published on two topics:
 
 ```python
 b"cam_front"   # front camera, 1920×1080
@@ -264,8 +259,7 @@ names: [bent, scratch, color, broken_large, broken_small, contamination, thread_
 - **Object disappeared from the scene** — press the ↺ *Reload* button in Webots to reset the world.
 - **Port 5555 already in use** — close any previous instance of the Webots controller or `gui/app.py` before launching; on Windows, `netstat -ano | findstr 5555` helps locate the offender.
 - **`best.pt` missing** — the runtime detector cannot start without `detection/model/best.pt`. Either retrain via `scripts/train.py` or copy a pretrained weight into that path.
-- **`supervisor` field reverts to FALSE** — Webots overwrites manual edits of `.wbt` files. Toggle `supervisor TRUE` through the Webots GUI (click the Robot node → field `supervisor` → TRUE → `Ctrl+S`).
-- **Headless OpenCV** — `cv2.imshow` will throw on machines with the `opencv-python-headless` build; the GUI uses `cv2.imwrite` / Tkinter rendering instead and does not require GUI support from OpenCV.
+- **`supervisor` field reverts to FALSE** — Webots overwrites manual edits of `.wbt` files. Toggle `supervisor TRUE` on the `CONVEYOR_ROBOT` node through the Webots GUI (click the node → field `supervisor` → TRUE → `Ctrl+S`).
 
 ## 🔧 Requirements File
 
@@ -282,21 +276,15 @@ matplotlib>=3.7.0
 
 ## 📜 License
 
-This project is licensed under the **MIT License** — see the LICENSE file for details. You are free to use, modify, and distribute the code for academic and commercial purposes, provided the original copyright notice is retained.
+This project is licensed under the **MIT License** — see the [LICENSE](LICENSE) file for details.
 
-## 📞 Contacts
+## 📬 Contacts
 
-**Egor Bespalov** (Беспалов Егор Андреевич)
-RTU MIREA, group КРБО-03-22, direction 15.03.06 — Mechatronics and Robotics
-
-[![Telegram](https://img.shields.io/badge/Telegram-@VadikQA-2CA5E0?logo=telegram&logoColor=white)](https://t.me/VadikQA)
-[![GitHub](https://img.shields.io/badge/GitHub-Saitama4722-181717?logo=github&logoColor=white)](https://github.com/Saitama4722)
-
-For questions about the thesis, the dataset conversion pipeline, or the GhostConv variant of YOLOv8n-OBB, reach out via Telegram or open an issue on GitHub.
+Telegram: [https://t.me/VadikQA](https://t.me/VadikQA)
 
 ---
 
-# Система визуальной дефектоскопии на конвейерной линии
+# Система обнаружения дефектов на конвейерной линии
 
 [![Python 3.10+](https://img.shields.io/badge/Python-3.10%2B-3776AB?logo=python&logoColor=white)](https://www.python.org/)
 [![Webots R2025a](https://img.shields.io/badge/Webots-R2025a-007ACC?logo=robotframework&logoColor=white)](https://cyberbotics.com)
@@ -306,29 +294,25 @@ For questions about the thesis, the dataset conversion pipeline, or the GhostCon
 
 Сквозной конвейер обнаружения дефектов промышленных изделий: симуляция в **Webots R2025a** → двухкамерный поток через **ZeroMQ** → детектор **YOLOv8n-OBB + GhostConv** → операторский интерфейс на **Tkinter** с онлайн-аналитикой.
 
-<!-- TODO: добавить demo.gif (например, docs/demo.gif) — рекомендуется запись 10–15 секунд работы GUI с двумя камерами и живой детекцией -->
+## 🚀 Описание
 
----
+`conveyor_defect_system` — прототип станции автоматического оптического контроля (АОК), классифицирующей поверхностные дефекты деталей на движущейся конвейерной ленте. Webots R2025a воспроизводит физически достоверную конвейерную линию с двумя камерами (фронтальная и боковая); Python-сервис детекции принимает JPEG-поток через ZMQ и выполняет инференс модели с ориентированными прямоугольниками (OBB) на базе YOLOv8n с заменённым backbone на GhostConv; операторский Tkinter-интерфейс отображает живой видеопоток, журнал дефектов и статистику в реальном времени.
 
-## 🚀 Описание проекта
-
-`conveyor_defect_system` — исследовательский прототип станции автоматического оптического контроля (АОК), классифицирующей поверхностные дефекты деталей на движущейся конвейерной ленте. Симулятор (Webots R2025a) воспроизводит физически достоверную конвейерную линию с двумя камерами (фронтальная и боковая); Python-сервис детекции принимает JPEG-поток через ZMQ и выполняет инференс модели с ориентированными прямоугольниками (OBB) на базе YOLOv8n с заменённым backbone на GhostConv; операторский Tkinter-интерфейс отображает живой видеопоток, журнал дефектов и статистику в реальном времени.
-
-Проект разработан в рамках выпускной квалификационной работы бакалавра в **РТУ МИРЭА**, группа **КРБО-03-22**, направление **15.03.06 — Мехатроника и робототехника**, защита в 2026 году.
+Поддерживаются три геометрии изделий (цилиндр, брусок, L-кронштейн) и распознавание восьми классов дефектов, типичных для механически обработанных и штампованных деталей.
 
 ## 🎯 Достигнутые показатели
 
-Все требования технического задания выполнены с многократным запасом:
+Все целевые метрики выполнены с многократным запасом:
 
-| Метрика | Требование ТЗ | Достигнуто | Статус |
+| Метрика | Требование | Достигнуто | Статус |
 | --- | --- | --- | --- |
 | Качество детекции (mAP@0.5) | ≥ 0.75 | **0.955** | ✅ |
 | Точность (Precision) | — | **0.970** | ✅ |
 | Полнота (Recall) | — | **0.874** | ✅ |
 | Скорость обработки кадра | ≤ 100 мс | **3.1 мс** | ✅ |
 | Разрешение видеопотока | ≥ 640×480 | **1920×1080** | ✅ |
-| Количество типов изделий | ≥ 3 | **3** (цилиндр, брусок, L-кронштейн) | ✅ |
-| Количество камер | 2 | **2** (фронтальная + боковая) | ✅ |
+| Количество типов изделий | ≥ 3 | **3** | ✅ |
+| Количество камер | 2 | **2** | ✅ |
 | Время обучения (RTX 4070, 100 эпох) | — | **~11 мин** | ✅ |
 
 Модель распознаёт **8 классов дефектов**: `bent` (изгиб), `scratch` (царапина), `color` (изменение цвета), `broken_large` (крупный скол), `broken_small` (мелкий скол), `contamination` (загрязнение), `thread_side` (дефект резьбы сбоку), `thread_top` (дефект резьбы сверху).
@@ -397,8 +381,8 @@ conveyor_defect_system/
                      │                                ▼
         ┌────────────────────────┐         ┌─────────────────────┐
         │  Контроллер Webots     │◀────────│  Tkinter GUI        │
-        │  (управление камерой   │ команды │  app.py             │
-        │   и конвейером)        │         │  + Matplotlib       │
+        │  (камеры + конвейер)   │ команды │  app.py             │
+        │                        │         │  + Matplotlib       │
         └────────────────────────┘         └─────────────────────┘
                      ▲                                ▲
                      │       ZMQ REQ :5556            │
@@ -431,7 +415,7 @@ pip install -r requirements.txt
 ```bash
 # 5. Запустить операторский GUI
 python gui/app.py
-#    затем нажать кнопку «Старт» в окне GUI
+#    затем нажать кнопку «Start» в окне GUI
 ```
 
 ## 📦 Установка
@@ -475,19 +459,18 @@ pip install torch torchvision --index-url https://download.pytorch.org/whl/cu121
 Операторский интерфейс (`gui/app.py`) реализован в одном тёмном Tkinter-окне:
 
 - **Видеопанель** — 1460×480, живой видеопоток с наложенными ориентированными рамками детекций.
-- **Переключатель камеры** — между *Камера 1 (фронтальная)* и *Камера 2 (боковая)*.
-- **Кнопки управления** — `Старт` (запуск конвейера) и `Стоп` (остановка конвейера).
-- **Выпадающий список** — `Деталь на ленте`: выбор детали, которую заспавнит симулятор.
-- **Пресеты камер** — `⬆ Сверху` (вид сверху) и `↔ Сбоку` (вид сбоку) для каждой камеры.
-- **Полноэкранный режим** — двойной клик по видеопанели разворачивает её в режим 1280×720.
-- **Панель статистики** — общий счётчик детекций и доминирующий класс дефекта.
+- **Переключатель камеры** — между *фронтальной* и *боковой* камерой.
+- **Кнопки управления** — `Start` (запуск конвейера) и `Stop` (остановка конвейера).
+- **Выпадающий список** — выбор детали, которую заспавнит симулятор.
+- **Пресеты камер** — вид сверху и вид сбоку, доступны для каждой камеры.
+- **Полноэкранный режим** — двойной клик по видеопанели разворачивает её на весь экран.
 - **Таблица детекций** — хронологический журнал: *Время / Камера / Класс / Уверенность*.
 - **График 1** — горизонтальная гистограмма топ-3 дефектов, обновляется в реальном времени.
 - **График 2** — линейный график динамики детекций, обновляется в реальном времени.
 
 ## 📡 Протокол ZMQ
 
-Контроллер Webots и Python-сервисы общаются по двум сокетам ZeroMQ:
+Контроллер Webots и Python-сервисы общаются по двум сокетам ZeroMQ.
 
 ### Порт 5555 — PUB/SUB (видео)
 
@@ -562,8 +545,7 @@ names: [bent, scratch, color, broken_large, broken_small, contamination, thread_
 - **Объект исчез со сцены** — нажать кнопку ↺ *Reload* в Webots, чтобы перезагрузить мир.
 - **Порт 5555 занят** — закрыть предыдущий экземпляр контроллера Webots или `gui/app.py`; на Windows помогает `netstat -ano | findstr 5555`.
 - **Отсутствует `best.pt`** — без файла `detection/model/best.pt` детектор не запустится. Нужно либо переобучить модель через `scripts/train.py`, либо положить готовые веса в указанный путь.
-- **Поле `supervisor` сбрасывается в FALSE** — Webots перезаписывает ручные правки `.wbt`-файлов. Включать `supervisor TRUE` нужно через GUI Webots (клик по Robot-узлу → поле `supervisor` → TRUE → `Ctrl+S`).
-- **Headless-сборка OpenCV** — `cv2.imshow` падает в окружениях с `opencv-python-headless`; GUI использует `cv2.imwrite` / отрисовку через Tkinter и не требует GUI-поддержки от OpenCV.
+- **Поле `supervisor` сбрасывается в FALSE** — Webots перезаписывает ручные правки `.wbt`-файлов. Включать `supervisor TRUE` на узле `CONVEYOR_ROBOT` нужно через GUI Webots (клик по узлу → поле `supervisor` → TRUE → `Ctrl+S`).
 
 ## 🔧 Файл зависимостей
 
@@ -580,14 +562,8 @@ matplotlib>=3.7.0
 
 ## 📜 Лицензия
 
-Проект распространяется по лицензии **MIT** — см. файл LICENSE. Разрешено свободное использование, модификация и распространение кода в академических и коммерческих целях при условии сохранения исходного уведомления об авторских правах.
+Проект распространяется по лицензии **MIT** — см. файл [LICENSE](LICENSE).
 
-## 📞 Контакты
+## 📬 Контакты
 
-**Беспалов Егор Андреевич**
-РТУ МИРЭА, группа КРБО-03-22, направление 15.03.06 — Мехатроника и робототехника
-
-[![Telegram](https://img.shields.io/badge/Telegram-@VadikQA-2CA5E0?logo=telegram&logoColor=white)](https://t.me/VadikQA)
-[![GitHub](https://img.shields.io/badge/GitHub-Saitama4722-181717?logo=github&logoColor=white)](https://github.com/Saitama4722)
-
-По вопросам ВКР, пайплайна конвертации датасета или варианта YOLOv8n-OBB с GhostConv — Telegram или issue на GitHub.
+Telegram: [https://t.me/VadikQA](https://t.me/VadikQA)
