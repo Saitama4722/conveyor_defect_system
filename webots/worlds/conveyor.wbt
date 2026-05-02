@@ -1,0 +1,259 @@
+#VRML_SIM R2025a utf8
+
+EXTERNPROTO "https://raw.githubusercontent.com/cyberbotics/webots/R2025a/projects/objects/floors/protos/RectangleArena.proto"
+EXTERNPROTO "https://raw.githubusercontent.com/cyberbotics/webots/R2025a/projects/objects/factory/conveyors/protos/ConveyorBelt.proto"
+EXTERNPROTO "https://raw.githubusercontent.com/cyberbotics/webots/R2025a/projects/appearances/protos/Parquetry.proto"
+
+WorldInfo {
+  info [
+    "Conveyor belt defect detection system."
+  ]
+  title "Conveyor Belt Defect Detection System"
+  basicTimeStep 16
+  contactProperties [
+    ContactProperties {
+      material2 "product"
+      coulombFriction [
+        500
+      ]
+      bounce 0
+      bounceVelocity 0.001
+      softCFM 0.0001
+    }
+  ]
+}
+Viewpoint {
+  orientation -0.3643948139291274 0.4290719775150407 0.8265069011768077 1.7079147864464757
+  position 0.11223175837348845 -2.0055931669439637 2.1680426376695903
+  follow "conveyor_robot"
+  followSmoothness 0
+}
+Background {
+  skyColor [
+    0.6 0.7 0.85
+  ]
+}
+DirectionalLight {
+  direction -0.3 -1 -0.5
+  intensity 1.2
+  castShadows TRUE
+}
+DEF SUN DirectionalLight {
+  ambientIntensity 0.5
+  direction 0.3 -1 -0.5
+  intensity 1.5
+  castShadows TRUE
+}
+RectangleArena {
+  floorSize 4 4
+  floorTileSize 1 1
+  floorAppearance Parquetry {
+    type "dark strip"
+  }
+}
+ConveyorBelt {
+  hidden translation_1 0.0006905863057944347 -0.0001998898831899501 0.047506288092332455
+  hidden rotation_1 0.10312115759687553 0.9940891685497726 0.0339521991615004 0.0026023400867152447
+  hidden linearVelocity_1 -1.1447644117860022e-07 1.0062102120974356e-08 8.094194764396434e-07
+  hidden angularVelocity_1 -3.051139386974189e-10 9.663570364572392e-07 -7.65787736965477e-09
+  name "conveyor"
+  size 2 0.3 0.06
+  appearance PBRAppearance {
+    baseColor 0.15 0.15 0.15
+    roughness 0.9
+    metalness 0
+  }
+  speed 0.03
+}
+SpotLight {
+  attenuation 0 0 1
+  beamWidth 0.4
+  cutOffAngle 0.8
+  direction 0 -1 0
+  intensity 2
+  location -0.5 1.2 0
+  castShadows TRUE
+}
+SpotLight {
+  attenuation 0 0 1
+  beamWidth 0.4
+  cutOffAngle 0.8
+  direction 0 -1 0
+  intensity 2
+  location 0.5 1.2 0
+  castShadows TRUE
+}
+DEF CONVEYOR_ROBOT Robot {
+  children [
+    DEF CAMERA_FRONT Camera {
+      translation 0.118 -0.621 2.55
+      rotation -0.5251938322927746 0.5191916170665715 0.6742488437434859 2.02
+      name "camera_front"
+      fieldOfView 0.785
+      width 1920
+      height 1080
+    }
+    DEF CAMERA_SIDE Camera {
+      translation 0.116 -2.57 0.862
+      rotation -0.12003241312790769 0.14403889575348922 0.9822652474300446 1.62
+      name "camera_side"
+      fieldOfView 0.785
+      width 1920
+      height 1080
+    }
+    SliderJoint {
+      jointParameters JointParameters {
+        position 709.2935999450673
+        axis 1 0 0
+      }
+      device [
+        LinearMotor {
+          name "belt_motor"
+          maxVelocity 1
+        }
+      ]
+      endPoint Solid {
+        translation 709.2935999450673 0.7 0
+        children [
+          Shape {
+            appearance PBRAppearance {
+              baseColor 0.2 0.2 0.2
+              transparency 1
+            }
+            geometry Box {
+              size 0.01 0.01 0.01
+            }
+          }
+        ]
+        name "belt_motor_anchor"
+        boundingObject Box {
+          size 0.01 0.01 0.01
+        }
+        physics Physics {
+        }
+        linearVelocity 0.1 0 -2.220445784552517e-16
+      }
+    }
+  ]
+  name "conveyor_robot"
+  controller "conveyor_controller"
+  supervisor TRUE
+}
+DEF METAL_NUT_0 Solid {
+  translation -0.7600762097469037 -4.627675209730089e-05 0.11438732684542884
+  rotation 0.08700630067844818 0.9962077594303634 -6.076995014741248e-05 0.010653512929383203
+  children [
+    Shape {
+      appearance PBRAppearance {
+        baseColor 0.7 0.7 0.75
+        roughness 0.3
+        metalness 0.9
+      }
+      geometry Cylinder {
+        height 0.1
+        radius 0.05
+      }
+    }
+  ]
+  name "metal_nut_0"
+  contactMaterial "product"
+  boundingObject Cylinder {
+    height 0.1
+    radius 0.05
+  }
+  physics Physics {
+    density -1
+    mass 0.5
+  }
+  linearVelocity 0.029977894043158558 4.16245116034104e-07 0.007466644872906024
+  angularVelocity 4.727139775927646e-06 -0.0008322644828907219 -2.3201739544068568e-07
+}
+DEF SCREW_0 Solid {
+  translation -0.4614788674288758 -9.15854143725213e-06 0.0886922853596738
+  rotation 0.1031668641993391 0.994664058961385 8.91164291580319e-05 0.00260110302210892
+  children [
+    Shape {
+      appearance PBRAppearance {
+        baseColor 0.8 0.8 0.85
+        roughness 0.2
+        metalness 0.95
+      }
+      geometry Box {
+        size 0.1 0.05 0.05
+      }
+    }
+  ]
+  name "screw_0"
+  contactMaterial "product"
+  boundingObject Box {
+    size 0.1 0.05 0.05
+  }
+  physics Physics {
+    density -1
+    mass 0.5
+  }
+  linearVelocity 0.029999856565466346 2.6714090771272508e-06 -7.634509991148787e-05
+  angularVelocity -6.135662372231168e-10 9.665339054773342e-07 -7.657089102559155e-09
+}
+DEF BRACKET_0 Solid {
+  translation -0.16150622539488602 -6.2705486816324425e-06 0.082916247360473
+  rotation 0.1021945702951826 0.9947644204432615 0.00013274925560925548 0.0026269689378311785
+  children [
+    Pose {
+      children [
+        Shape {
+          appearance PBRAppearance {
+            baseColor 0.65 0.65 0.7
+            roughness 0.4
+            metalness 0.85
+          }
+          geometry Box {
+            size 0.2 0.04 0.04
+          }
+        }
+      ]
+    }
+    Pose {
+      translation 0.08 0 0.04
+      children [
+        Shape {
+          appearance PBRAppearance {
+            baseColor 0.65 0.65 0.7
+            roughness 0.4
+            metalness 0.85
+          }
+          geometry Box {
+            size 0.04 0.04 0.1
+          }
+        }
+      ]
+    }
+  ]
+  name "bracket_0"
+  contactMaterial "product"
+  boundingObject Group {
+    children [
+      Pose {
+        children [
+          Box {
+            size 0.2 0.04 0.04
+          }
+        ]
+      }
+      Pose {
+        translation 0.08 0 0.04
+        children [
+          Box {
+            size 0.04 0.04 0.1
+          }
+        ]
+      }
+    ]
+  }
+  physics Physics {
+    density -1
+    mass 0.5
+  }
+  linearVelocity 0.029999863770355184 2.6686964584283903e-06 -7.666246645649839e-05
+  angularVelocity -8.95925315237889e-10 9.656939274142936e-07 -1.609018099690262e-08
+}
