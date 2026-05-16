@@ -23,8 +23,8 @@ WorldInfo {
   ]
 }
 Viewpoint {
-  orientation -0.3643948139291274 0.4290719775150407 0.8265069011768077 1.7079147864464757
-  position 0.11223175837348845 -2.0055931669439637 2.1680426376695903
+  orientation -0.12398080914599857 0.13165491031029986 0.9835119437783613 1.5274026335440585
+  position -0.19694859115894223 -3.1054571649575777 0.8506294076408268
   follow "conveyor_robot"
   followSmoothness 0
 }
@@ -52,10 +52,10 @@ RectangleArena {
   }
 }
 ConveyorBelt {
-  hidden translation_1 0.0006905863057944347 -0.0001998898831899501 0.047506288092332455
-  hidden rotation_1 0.10312115759687553 0.9940891685497726 0.0339521991615004 0.0026023400867152447
-  hidden linearVelocity_1 -1.1447644117860022e-07 1.0062102120974356e-08 8.094194764396434e-07
-  hidden angularVelocity_1 -3.051139386974189e-10 9.663570364572392e-07 -7.65787736965477e-09
+  hidden translation_1 0.0002026942171270253 -0.00025999891366240154 0.047431585366034264
+  hidden rotation_1 0.10278308925437503 0.99463925839185 0.011330588203529024 0.0026231886797355533
+  hidden linearVelocity_1 8.453290547469854e-07 -5.678064925154942e-10 2.6517218950345978e-06
+  hidden angularVelocity_1 6.927107324426357e-10 6.601868843720468e-07 -1.4755217868673494e-10
   name "conveyor"
   size 2 0.3 0.06
   appearance PBRAppearance {
@@ -103,7 +103,7 @@ DEF CONVEYOR_ROBOT Robot {
     }
     SliderJoint {
       jointParameters JointParameters {
-        position 709.2935999450673
+        position 728.7783999427138
         axis 1 0 0
       }
       device [
@@ -113,7 +113,7 @@ DEF CONVEYOR_ROBOT Robot {
         }
       ]
       endPoint Solid {
-        translation 709.2935999450673 0.7 0
+        translation 728.7783999427138 0.7 0
         children [
           Shape {
             appearance PBRAppearance {
@@ -131,7 +131,7 @@ DEF CONVEYOR_ROBOT Robot {
         }
         physics Physics {
         }
-        linearVelocity 0.1 0 -2.220445784552517e-16
+        linearVelocity 0.1 0 2.6469779558556055e-23
       }
     }
   ]
@@ -140,14 +140,18 @@ DEF CONVEYOR_ROBOT Robot {
   supervisor TRUE
 }
 DEF METAL_NUT_0 Solid {
-  translation -0.7600762097469037 -4.627675209730089e-05 0.11438732684542884
-  rotation 0.08700630067844818 0.9962077594303634 -6.076995014741248e-05 0.010653512929383203
+  translation -0.10134059164352287 -1.0385527342751292e-05 0.11276921809241375
+  rotation 0.0145559325933236 -0.999892286820976 0.0018813777551873745 0.01875721473539871
   children [
     Shape {
       appearance PBRAppearance {
-        baseColor 0.7 0.7 0.75
-        roughness 0.3
-        metalness 0.9
+        baseColorMap ImageTexture {
+          url [
+            "../../datasets/dataset/dataset/metal_nut/test/bent/000.png"
+          ]
+        }
+        roughness 0.4
+        metalness 0.8
       }
       geometry Cylinder {
         height 0.1
@@ -165,18 +169,22 @@ DEF METAL_NUT_0 Solid {
     density -1
     mass 0.5
   }
-  linearVelocity 0.029977894043158558 4.16245116034104e-07 0.007466644872906024
-  angularVelocity 4.727139775927646e-06 -0.0008322644828907219 -2.3201739544068568e-07
+  linearVelocity 0.030132581896380854 -3.2380861338208786e-06 0.015205895833596576
+  angularVelocity 3.587620701895879e-07 0.0018451164010965925 4.887459974040351e-07
 }
 DEF SCREW_0 Solid {
-  translation -0.4614788674288758 -9.15854143725213e-06 0.0886922853596738
-  rotation 0.1031668641993391 0.994664058961385 8.91164291580319e-05 0.00260110302210892
+  translation 0.19344436428701348 2.7307534072384666e-05 0.08691779649596616
+  rotation 0.10275517299592973 0.9944874276526993 -0.02088374160187527 0.0026238577065855737
   children [
     Shape {
       appearance PBRAppearance {
-        baseColor 0.8 0.8 0.85
-        roughness 0.2
-        metalness 0.95
+        baseColorMap ImageTexture {
+          url [
+            "../../datasets/dataset/dataset/screw/test/scratch_head/000.png"
+          ]
+        }
+        roughness 0.3
+        metalness 0.9
       }
       geometry Box {
         size 0.1 0.05 0.05
@@ -192,20 +200,24 @@ DEF SCREW_0 Solid {
     density -1
     mass 0.5
   }
-  linearVelocity 0.029999856565466346 2.6714090771272508e-06 -7.634509991148787e-05
-  angularVelocity -6.135662372231168e-10 9.665339054773342e-07 -7.657089102559155e-09
+  linearVelocity 0.03000080143338036 8.982897075231335e-07 -7.574719742378097e-05
+  angularVelocity 6.896806113374403e-10 6.662606945560572e-07 -1.4588747050999392e-10
 }
 DEF BRACKET_0 Solid {
-  translation -0.16150622539488602 -6.2705486816324425e-06 0.082916247360473
-  rotation 0.1021945702951826 0.9947644204432615 0.00013274925560925548 0.0026269689378311785
+  translation 0.4947304285802115 0.0006068385447964726 0.08113183907455838
+  rotation 0.004106207152689916 0.052861053265292425 -0.9985934348424803 0.04997163721465123
   children [
     Pose {
       children [
         Shape {
           appearance PBRAppearance {
-            baseColor 0.65 0.65 0.7
+            baseColorMap ImageTexture {
+              url [
+                "../../datasets/dataset/dataset/bottle/test/broken_large/000.png"
+              ]
+            }
             roughness 0.4
-            metalness 0.85
+            metalness 0.8
           }
           geometry Box {
             size 0.2 0.04 0.04
@@ -218,9 +230,13 @@ DEF BRACKET_0 Solid {
       children [
         Shape {
           appearance PBRAppearance {
-            baseColor 0.65 0.65 0.7
+            baseColorMap ImageTexture {
+              url [
+                "../../datasets/dataset/dataset/bottle/test/broken_large/000.png"
+              ]
+            }
             roughness 0.4
-            metalness 0.85
+            metalness 0.8
           }
           geometry Box {
             size 0.04 0.04 0.1
@@ -254,6 +270,6 @@ DEF BRACKET_0 Solid {
     density -1
     mass 0.5
   }
-  linearVelocity 0.029999863770355184 2.6686964584283903e-06 -7.666246645649839e-05
-  angularVelocity -8.95925315237889e-10 9.656939274142936e-07 -1.609018099690262e-08
+  linearVelocity 0.030000806142843055 8.981901160514626e-07 -7.596372567889542e-05
+  angularVelocity -1.4443415964694468e-09 6.581066527466488e-07 -4.516305051921389e-09
 }

@@ -1,4 +1,4 @@
-"""Конвертация MVTec-масок в YOLO OBB-разметку."""
+"""Конвертация MVTec-масок в YOLO OBB-разметку (мультиклассовая версия)."""
 
 from __future__ import annotations
 
@@ -10,42 +10,38 @@ import cv2
 import numpy as np
 
 
-DATASET_ROOT: Path = Path("datasets/dataset")
-OUTPUT_ROOT: Path = Path("datasets/yolo_dataset")
-CATEGORIES: list[str] = ["metal_nut", "screw", "bottle"]
+DATASET_ROOT: Path = Path("datasets/dataset/dataset")
+OUTPUT_ROOT: Path = Path("datasets/yolo_dataset_multiclass")
 TRAIN_RATIO: float = 0.8
 RANDOM_SEED: int = 42
 MIN_MASK_AREA: int = 100   # минимальная площадь дефекта в пикселях
 
-# Глобальные имена классов в порядке индексов 0..7
+# Имя папки дефекта → индекс класса
+CLASS_MAP: dict[str, int] = {
+    "bent": 0,
+    "scratch": 1,
+    "scratch_head": 1,
+    "scratch_neck": 1,
+    "color": 2,
+    "broken_large": 3,
+    "broken_small": 4,
+    "contamination": 5,
+    "thread_side": 6,
+    "thread_top": 7,
+}
+
+# Имена классов в порядке индексов 0..7
 CLASS_NAMES: list[str] = [
-    "bent",            # 0
-    "scratch",         # 1
-    "color",           # 2
-    "broken_large",    # 3
-    "broken_small",    # 4
-    "contamination",   # 5
-    "thread_side",     # 6
-    "thread_top",      # 7
+    "bent", "scratch", "color",
+    "broken_large", "broken_small", "contamination",
+    "thread_side", "thread_top",
 ]
 
-# Соответствие (категория → дефект → индекс класса)
-CLASS_MAP: dict[str, dict[str, int]] = {
-    "metal_nut": {
-        "bent": 0,
-        "scratch": 1,
-        "color": 2,
-    },
-    "screw": {
-        "scratch": 1,
-        "thread_side": 6,
-        "thread_top": 7,
-    },
-    "bottle": {
-        "broken_large": 3,
-        "broken_small": 4,
-        "contamination": 5,
-    },
+# Категория → список папок дефектов
+CATEGORIES: dict[str, list[str]] = {
+    "metal_nut": ["bent", "scratch", "color"],
+    "screw": ["scratch_head", "scratch_neck", "thread_side", "thread_top"],
+    "bottle": ["broken_large", "broken_small", "contamination"],
 }
 
 
@@ -78,23 +74,20 @@ def convert_category(
     category: str,
     defect_type: str,
     class_idx: int,
+    mask_paths: list[Path],
     output_images: Path,
     output_labels: Path,
     split: str,
 ) -> int:
-    """Конвертировать одну пару (категория, дефект) в указанный split."""
-    masks_dir = DATASET_ROOT / category / "ground_truth" / defect_type
+    """Конвертировать переданные маски одной пары (категория, дефект) в split."""
     images_dir = DATASET_ROOT / category / "test" / defect_type
 
-    if not masks_dir.exists():
-        print(f"[пропуск] нет каталога масок: {masks_dir}")
-        return 0
     if not images_dir.exists():
         print(f"[пропуск] нет каталога изображений: {images_dir}")
         return 0
 
     count = 0
-    for mask_path in sorted(masks_dir.glob("*_mask.png")):
+    for mask_path in mask_paths:
         stem = mask_path.stem.replace("_mask", "")
         image_path = images_dir / f"{stem}.png"
         if not image_path.exists():
@@ -119,7 +112,7 @@ def convert_category(
         count += 1
 
     if count:
-        print(f"[{split}] {category}/{defect_type}: {count} изображений")
+        print(f"[{split}] {category}/{defect_type} (cls={class_idx}): {count} изображений")
     return count
 
 
@@ -147,28 +140,32 @@ def convert_all() -> None:
     for d in (images_train, images_val, labels_train, labels_val):
         d.mkdir(parents=True, exist_ok=True)
 
-    # Делим на train/val на уровне триплетов (категория, дефект)
-    triplets: list[tuple[str, str, int]] = []
-    for category in CATEGORIES:
-        for defect_type, class_idx in CLASS_MAP.get(category, {}).items():
-            triplets.append((category, defect_type, class_idx))
-
-    rng.shuffle(triplets)
-    split_at = int(len(triplets) * TRAIN_RATIO)
-    train_triplets = triplets[:split_at]
-    val_triplets = triplets[split_at:]
-
     train_count = 0
-    for category, defect_type, class_idx in train_triplets:
-        train_count += convert_category(
-            category, defect_type, class_idx, images_train, labels_train, "train"
-        )
-
     val_count = 0
-    for category, defect_type, class_idx in val_triplets:
-        val_count += convert_category(
-            category, defect_type, class_idx, images_val, labels_val, "val"
-        )
+    # Разбиение 80/20 выполняется внутри каждой подпапки дефекта,
+    # чтобы каждый класс присутствовал и в train, и в val.
+    for category, defects in CATEGORIES.items():
+        for defect_type in defects:
+            class_idx = CLASS_MAP[defect_type]
+            masks_dir = DATASET_ROOT / category / "ground_truth" / defect_type
+            if not masks_dir.exists():
+                print(f"[пропуск] нет каталога масок: {masks_dir}")
+                continue
+
+            mask_paths = sorted(masks_dir.glob("*_mask.png"))
+            rng.shuffle(mask_paths)
+            split_at = int(len(mask_paths) * TRAIN_RATIO)
+            train_masks = mask_paths[:split_at]
+            val_masks = mask_paths[split_at:]
+
+            train_count += convert_category(
+                category, defect_type, class_idx, train_masks,
+                images_train, labels_train, "train",
+            )
+            val_count += convert_category(
+                category, defect_type, class_idx, val_masks,
+                images_val, labels_val, "val",
+            )
 
     _write_data_yaml(OUTPUT_ROOT / "data.yaml")
 

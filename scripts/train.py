@@ -9,14 +9,14 @@ import torch
 from ultralytics import YOLO
 
 
-DATASET_YAML: str = "datasets/yolo_dataset/yolo_dataset/data.yaml"
+DATASET_YAML: str = r"F:\YandexDisk\Работа\studlance\925750\f\conveyor_defect_system\datasets\yolo_dataset_multiclass\data.yaml"
 MODEL_BASE: str = "yolov8n-obb.pt"
 OUTPUT_DIR: str = "runs/train"
 EXPERIMENT_NAME: str = "defect_detector_obb"
-EPOCHS: int = 100
+EPOCHS: int = 200
 IMG_SIZE: int = 640
 BATCH_SIZE: int = 8
-PATIENCE: int = 15
+PATIENCE: int = 50
 LR0: float = 0.01
 LRF: float = 0.01
 MOMENTUM: float = 0.937
